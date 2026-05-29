@@ -51,13 +51,21 @@ public enum KeychainCookies {
         let data = try? NSKeyedArchiver.archivedData(withRootObject: cookies, requiringSecureCoding: false)
         guard let data else { return }
 
-        let query = [
+        let deleteQuery = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrAccount: keychainKeyName,
+            kSecAttrAccessGroup: Constants.keychainGroupName
+        ] as [CFString : Any] as CFDictionary
+        SecItemDelete(deleteQuery)
+
+        let addQuery = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrAccount: keychainKeyName,
             kSecValueData: data,
-            kSecAttrAccessGroup: Constants.keychainGroupName
+            kSecAttrAccessGroup: Constants.keychainGroupName,
+            //readable after first unlock so background/locked launches can restore cookies
+            kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlock
         ] as [CFString : Any] as CFDictionary
-        SecItemDelete(query)
-        SecItemAdd(query, nil)
+        SecItemAdd(addQuery, nil)
     }
 }

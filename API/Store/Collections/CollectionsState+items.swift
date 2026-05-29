@@ -13,20 +13,37 @@ extension CollectionsState {
     }
     
     public func childrensRecursive(of id: UserCollection.ID) -> [UserCollection] {
-        var found = childrens(of: id)
-        for c in found {
-            found += childrensRecursive(of: c.id)
+        var found: [UserCollection] = []
+        //visited guards against a cyclic parent chain (would otherwise recurse forever)
+        var visited: Set<UserCollection.ID> = [id]
+
+        func walk(_ parentId: UserCollection.ID) {
+            for child in childrens(of: parentId) where visited.insert(child.id).inserted {
+                found.append(child)
+                walk(child.id)
+            }
         }
+
+        walk(id)
         return found
     }
-    
+
     public func location(of collection: UserCollection) -> [UserCollection] {
-        guard
-            let parentId = collection.parent,
+        //visited guards against a cyclic parent chain (would otherwise loop forever)
+        var chain: [UserCollection] = []
+        var visited: Set<UserCollection.ID> = [collection.id]
+        var current = collection
+
+        while
+            let parentId = current.parent,
+            visited.insert(parentId).inserted,
             let parent = user[parentId]
-        else { return [] }
-        
-        return ([parent] + location(of: parent)).reversed()
+        {
+            chain.append(parent)
+            current = parent
+        }
+
+        return chain.reversed()
     }
     
     public func location(of collection: UserCollection) -> CGroup? {

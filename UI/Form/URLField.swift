@@ -38,8 +38,17 @@ extension URLField: View {
                 TextField(title, text: $temp, prompt: prompt)
             }
         }
-            .task(id: value) { temp = value?.absoluteString ?? "" }
-            .task(id: temp) { value = URL(string: temp) }
+            //sync from value only on an external change, not an echo of typing
+            //(else normalization rewrites the text under the caret)
+            .task(id: value) {
+                if URL(string: temp) != value {
+                    temp = value?.absoluteString ?? ""
+                }
+            }
+            //empty clears the value (optional binding); the non-optional init keeps the last valid URL
+            .task(id: temp) {
+                value = temp.isEmpty ? nil : URL(string: temp)
+            }
             #if canImport(UIKit)
             .keyboardType(.URL)
             .textContentType(.URL)

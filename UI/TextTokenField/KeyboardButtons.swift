@@ -3,31 +3,33 @@ import Backport
 
 #if canImport(UIKit)
 class KeyboardButtons: UIInputView {
-    private var hosting: UIHostingController<Hosting>
-    
+    private let hosting: UIHostingController<Hosting>
+
     init(_ items: [String], onPress: @escaping (String) -> Void) {
         //init
         self.hosting = .init(rootView: .init(items: items, onPress: onPress))
         super.init(frame: .init(x: 0, y: 0, width: 100, height: 45.0), inputViewStyle: .keyboard)
-        
+
         //subview
         hosting.view.backgroundColor = .clear
-        addSubview(hosting.view)
-        
-        //constraints
         hosting.view.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(hosting.view)
+
+        //constraints — pin all edges
         NSLayoutConstraint.activate([
-            hosting.view.widthAnchor.constraint(equalTo: widthAnchor),
-            hosting.view.heightAnchor.constraint(equalTo: heightAnchor)
+            hosting.view.leadingAnchor.constraint(equalTo: leadingAnchor),
+            hosting.view.trailingAnchor.constraint(equalTo: trailingAnchor),
+            hosting.view.topAnchor.constraint(equalTo: topAnchor),
+            hosting.view.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
     }
-    
+
     func update(_ items: [String]) {
         if hosting.rootView.items != items {
             hosting.rootView = .init(items: items, onPress: hosting.rootView.onPress)
         }
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

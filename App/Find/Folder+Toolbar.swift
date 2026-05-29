@@ -8,14 +8,14 @@ extension Folder {
         @EnvironmentObject private var r: RaindropsStore
         
         @Binding var find: FindBy
-        @Binding var selection: Set<Raindrop.ID>
-        
-        private var pick: RaindropsPick {
-            selection.count == r.state.ids(find).count ? .all(find): .some(selection)
-        }
-        
+        @Binding var pick: RaindropsPick
+
+        //`.all` targets the whole collection incl. unloaded items — only an explicit Select-all sets it
         private func toggleAll() {
-            selection = .init(pick.isAll ? [] : r.state.ids(find))
+            switch pick {
+            case .all: pick = .some([])
+            case .some: pick = .all(find)
+            }
         }
 
         func body(content: Content) -> some View {

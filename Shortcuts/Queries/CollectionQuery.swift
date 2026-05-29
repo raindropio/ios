@@ -37,12 +37,19 @@ struct CollectionQuery: EntityStringQuery {
         }
 
         // Build path for each user collection
-        let byId = Dictionary(uniqueKeysWithValues: user.map { ($0.id, $0) })
+        // uniquingKeysWith, not uniqueKeysWithValues which traps on duplicate ids
+        let byId = Dictionary(user.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
 
         func buildPath(for collection: UserCollection) -> String {
             var parts = [collection.title]
             var current = collection
-            while let parentId = current.parent, let parent = byId[parentId] {
+            //visited guards against a cyclic parent chain (would otherwise loop forever)
+            var visited: Set<UserCollection.ID> = [collection.id]
+            while
+                let parentId = current.parent,
+                visited.insert(parentId).inserted,
+                let parent = byId[parentId]
+            {
                 parts.insert(parent.title, at: 0)
                 current = parent
             }

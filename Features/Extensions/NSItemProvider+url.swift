@@ -40,10 +40,13 @@ fileprivate struct DirectURL: Transferable {
         if url.isFileURL {
             //unlock file
             _ = url.startAccessingSecurityScopedResource()
-            //always make a file copy, required in any case
-            let copy = FileManager.default.temporaryDirectory
-                .appendingPathComponent(url.lastPathComponent)
-            try? FileManager.default.removeItem(at: copy)
+            //always make a file copy, required in any case.
+            //unique dir per file so same-named files don't overwrite each other or dedupe in Set<URL>
+            let dir = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString, isDirectory: true)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            let name = url.lastPathComponent.isEmpty ? UUID().uuidString : url.lastPathComponent
+            let copy = dir.appendingPathComponent(name)
             try FileManager.default.copyItem(at: url, to: copy)
             self.rawValue = copy
         } else {

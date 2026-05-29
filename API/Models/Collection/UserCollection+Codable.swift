@@ -32,7 +32,7 @@ extension UserCollection: Codable, EncodableWithConfiguration {
 
         id = try container.decode(type(of: id), forKey: ._id)
         title = try container.decode(type(of: title), forKey: .title)
-        slug = try container.decode(type(of: title), forKey: .slug)
+        slug = (try? container.decode(type(of: slug), forKey: .slug)) ?? ""
         description = try container.decodeIfPresent(type(of: description), forKey: .description) ?? ""
         count = (try? container.decode(type(of: count), forKey: .count)) ?? 0
         color = try? container.decode(type(of: color), forKey: .color)

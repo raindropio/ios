@@ -56,7 +56,6 @@ extension Folder.Toolbar {
                             if #available(iOS 26.0, *) {
                                 ToolbarItem {
                                     EditButton("Select")
-                                        .labelStyle(.titleOnly)
                                 }
                                 
                                 ToolbarSpacer()

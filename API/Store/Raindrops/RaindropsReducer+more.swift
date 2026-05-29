@@ -53,18 +53,15 @@ extension RaindropsReducer {
             return
         }
         
-        //data corruption check
-        let existingIds = state[find].ids
-        guard !(items.contains { existingIds.contains($0.id) })
-        else {
-            state[find].more = .error
-            return
-        }
-        
+        //a local prepend shifts the page-offset window, so a fetched page can overlap
+        //already-loaded ids — dedup instead of failing
+        let existingIds = Set(state[find].ids)
+        let newItems = items.filter { !existingIds.contains($0.id) }
+
         //add to items dictionary and update group
-        state.items.merge(items.map { ($0.id, $0) }) { _, new in new }
-        
-        state[find].ids = state[find].ids + items.map(\.id)
+        state.items.merge(newItems.map { ($0.id, $0) }) { _, new in new }
+
+        state[find].ids = state[find].ids + newItems.map(\.id)
         state[find].page = page
         state[find].total = total
         state[find].validMore()

@@ -15,12 +15,14 @@ extension RaindropsReducer {
             .chunked(into: 10)
         
         for chunk in chunks {
-            newRaindrops += await withTaskGroup(of: Raindrop?.self) { [self] group in
+            //don't touch the @State bindings from the parallel child tasks (off-main data
+            //race) — collect each outcome and apply it on the main actor below
+            let outcomes = await withTaskGroup(of: (url: URL, raindrop: Raindrop?, error: RestError?).self) { [self] group in
                 for url in chunk {
                     group.addTask {
                         do {
                             var raindrop: Raindrop
-                            
+
                             //file
                             if url.isFileURL {
                                 raindrop = try await self.rest.raindropUploadFile(
@@ -36,26 +38,36 @@ extension RaindropsReducer {
                                 }
                                 raindrop = try await self.rest.raindropCreate(raindrop: item)
                             }
-                            
-                            completed?.wrappedValue.insert(url)
-                            return raindrop
+
+                            return (url, raindrop, nil)
                         } catch {
                             print(error, url)
-                            failed?.wrappedValue[url] = (error as? RestError) ?? .unknown(error.localizedDescription)
-                            return nil
+                            return (url, nil, (error as? RestError) ?? .unknown(error.localizedDescription))
                         }
                     }
                 }
-                
-                var raindrops = [Raindrop]()
-                for await raindrop in group {
-                    if let raindrop {
-                        raindrops.append(raindrop)
+
+                var results = [(url: URL, raindrop: Raindrop?, error: RestError?)]()
+                for await result in group {
+                    results.append(result)
+                }
+
+                return results
+            }
+
+            await MainActor.run {
+                for outcome in outcomes {
+                    if outcome.raindrop != nil {
+                        completed?.wrappedValue.insert(outcome.url)
+                        //clear any prior failure on success
+                        failed?.wrappedValue.removeValue(forKey: outcome.url)
+                    } else if let error = outcome.error {
+                        failed?.wrappedValue[outcome.url] = error
                     }
                 }
-                
-                return raindrops
             }
+
+            newRaindrops += outcomes.compactMap(\.raindrop)
         }
         
         //can't add anything

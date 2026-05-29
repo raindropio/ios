@@ -19,7 +19,9 @@ extension PurchaseStack {
                 Section {
                     ForEach(products) { product in
                         ActionButton {
-                            try await dispatch(SubscriptionAction.purchase(u.state.me!.id, product))
+                            //me can be nil after a background logout
+                            guard let meId = u.state.me?.id else { return }
+                            try await dispatch(SubscriptionAction.purchase(meId, product))
                             dismiss()
                         } label: {
                             Label(product.displayName, systemImage: "bolt.fill").tint(.primary)

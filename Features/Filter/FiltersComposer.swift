@@ -37,23 +37,31 @@ extension FiltersComposer {
         @Environment(\.dismiss) private var dismiss
         @State private var show = false
         
+        //match by identity (id = kind+exclude); full == also compares the volatile count
+        private func isSelected(_ item: Filter) -> Bool {
+            find.filters.contains { $0.id == item.id }
+        }
+
         private func toggle(_ item: Filter) {
-            if find.filters.contains(item) {
-                find.filters = find.filters.filter { $0 != item }
+            if isSelected(item) {
+                find.filters.removeAll { $0.id == item.id }
             } else {
                 find.filters.append(item)
             }
         }
-        
+
         private var selectedCreated: Binding<Filter?> {
             .init(
                 get: {
-                    find.filters.first {
+                    //return the displayed element so the Picker (matches tags by Hashable) highlights it
+                    guard let selected = find.filters.first(where: {
                         if case .created = $0.kind {
                             return true
                         }
                         return false
-                    }
+                    }) else { return nil }
+
+                    return created.first { $0.id == selected.id } ?? selected
                 },
                 set: {
                     find.filters = find.filters.filter {
@@ -70,8 +78,8 @@ extension FiltersComposer {
         }
         
         private func activeBadge(_ item: Filter) -> Text {
-            let active = find.filters.contains(item)
-            
+            let active = isSelected(item)
+
             return .init(active ? "✓" : String(item.count))
                 .foregroundColor(active ? .accentColor : .secondary)
                 .fontWeight(active ? .semibold : nil)

@@ -56,18 +56,23 @@ extension Rest {
             let identityToken = credentials.identityToken,
             let identityTokenString = String(data: identityToken, encoding: .utf8),
             let code = credentials.authorizationCode,
-            let codeString = String(data: code, encoding: .utf8),
-            let fullName = credentials.fullName
+            let codeString = String(data: code, encoding: .utf8)
         else {
             throw RestError.appleAuthCredentialsInvalid
         }
-        
+
+        //fullName is only returned on the first authorization, never on refresh
+        let displayName = credentials.fullName.map {
+            "\($0.familyName ?? "") \($0.givenName ?? "") \($0.middleName ?? "")"
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        } ?? ""
+
         let res: AuthResponse = try await fetch.get(
             "auth/apple/native",
             query: [
                 .init(name: "code", value: codeString),
                 .init(name: "identity_token", value: identityTokenString),
-                .init(name: "display_name", value: "\(fullName.familyName ?? "") \(fullName.givenName ?? "") \(fullName.middleName ?? "")".trimmingCharacters(in: .whitespacesAndNewlines))
+                .init(name: "display_name", value: displayName)
             ]
         )
         

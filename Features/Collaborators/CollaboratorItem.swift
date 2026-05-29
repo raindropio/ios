@@ -18,7 +18,9 @@ struct CollaboratorItem: View {
                 HStack {
                     Text(collaborator.name)
                     Spacer()
-                    Text("Me")
+                    if collaborator.me {
+                        Text("Me")
+                    }
                 }
                 
                 Group {

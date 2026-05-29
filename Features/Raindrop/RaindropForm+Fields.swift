@@ -5,7 +5,6 @@ import UI
 extension RaindropForm {
     struct Fields {
         @State private var cover = false
-        @State private var highlights = false
 
         @Binding var raindrop: Raindrop
         var suggestions: RaindropSuggestions
@@ -88,15 +87,11 @@ extension RaindropForm.Fields: View {
         
         //tags
         Section {
-            NavigationLink {
-                RaindropTags($raindrop)
-            } label: {
-                Label {
-                    TagsField($raindrop.tags)
-                        .focused($focus, equals: .tags)
-                } icon: {
-                    Image(systemName: "number")
-                }
+            Label {
+                TagsField($raindrop.tags)
+                    .focused($focus, equals: .tags)
+            } icon: {
+                Image(systemName: "number")
             }
         } footer: {
             RaindropSuggestedTags(raindrop: $raindrop, suggestions: suggestions)

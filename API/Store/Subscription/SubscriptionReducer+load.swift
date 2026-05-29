@@ -23,7 +23,8 @@ extension SubscriptionReducer {
         case is CancellationError:
             break
         default:
-            state.current = nil
+            //keep the cached subscription on transient errors — only reloaded(_:) clears it.
+            //otherwise a flaky network flips an active PRO user to "Free"
             throw error
         }
     }

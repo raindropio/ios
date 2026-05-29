@@ -35,16 +35,21 @@ fileprivate class ReceiptRefresher: NSObject, SKRequestDelegate {
     }
     
     func requestDidFinish(_ request: SKRequest) {
-        continuation?.resume()
+        //resume exactly once — StoreKit can deliver both didFinish and didFail
+        guard let continuation else { return }
+        self.continuation = nil
+        continuation.resume()
         request.cancel()
     }
-    
+
     func request(_ request: SKRequest, didFailWithError error: Error) {
+        guard let continuation else { return }
+        self.continuation = nil
         if request is SKReceiptRefreshRequest {
             //refresh can end with error even if refresh is complete
-            continuation?.resume()
+            continuation.resume()
         } else {
-            continuation?.resume(throwing: error)
+            continuation.resume(throwing: error)
         }
     }
 }
