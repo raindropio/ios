@@ -10,9 +10,9 @@ extension Rest {
         
         switch failed.status {
         case 400: throw RestError.invalid(failed.errorMessage)
-        case 401: throw RestError.unauthorized
-        case 403: throw RestError.forbidden
-        case 404: throw RestError.notFound
+        case 401: throw RestError.unauthorized(failed.errorMessage)
+        case 403: throw RestError.forbidden(failed.errorMessage)
+        case 404: throw RestError.notFound(failed.errorMessage)
         default: break
         }
     }

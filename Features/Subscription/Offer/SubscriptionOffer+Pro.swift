@@ -15,7 +15,7 @@ extension SubscriptionOffer {
                         .fontWeight(.semibold)
                         .lineSpacing(3)
                     
-                    Text("Starting from **\(s.state.lowestDisplayPrice)/month**. Enabled on all platforms. Cancel anytime.")
+                    Text("Starting from \(s.state.lowestDisplayPrice)/month. Enabled on all platforms. Cancel anytime.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .contentTransition(.numericText())

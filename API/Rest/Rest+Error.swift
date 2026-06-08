@@ -2,9 +2,9 @@ import Foundation
 
 public enum RestError: LocalizedError, Equatable {
     case unknown(String? = nil)
-    case unauthorized
-    case forbidden
-    case notFound
+    case unauthorized(String? = nil)
+    case forbidden(String? = nil)
+    case notFound(String? = nil)
     case invalid(String? = nil)
     case tfaRequired(token: String)
     
@@ -18,9 +18,9 @@ public enum RestError: LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .unknown(let message): return message ?? String(localized: "Unknown error")
-        case .unauthorized: return String(localized: "Please log in first")
-        case .forbidden: return String(localized: "You don't have access")
-        case .notFound: return String(localized: "Nothing found")
+        case .unauthorized(let message): return message ?? String(localized: "Please log in first")
+        case .forbidden(let message): return message ?? String(localized: "You don't have access")
+        case .notFound(let message): return message ?? String(localized: "Nothing found")
         case .invalid(let message): return message ?? String(localized: "Invalid request")
         case .tfaRequired(_): return String(localized: "2FA required")
 

@@ -14,7 +14,7 @@ extension Rest {
         }
         
         guard res.result == true
-        else { throw RestError.unauthorized }
+        else { throw RestError.unauthorized() }
     }
 }
 
@@ -81,7 +81,7 @@ extension Rest {
         }
         
         guard res.result == true
-        else { throw RestError.unauthorized }
+        else { throw RestError.unauthorized() }
     }
 }
 
@@ -100,7 +100,7 @@ extension Rest {
         }
         
         guard res.result == true
-        else { throw RestError.unauthorized }
+        else { throw RestError.unauthorized() }
     }
 }
 
@@ -155,7 +155,7 @@ extension Rest {
         )
         
         guard res.result == true
-        else { throw RestError.unauthorized }
+        else { throw RestError.unauthorized() }
     }
     
     fileprivate struct JWTTokenBody: Codable {
@@ -172,7 +172,7 @@ extension Rest {
         )
         
         guard res.result == true
-        else { throw RestError.unauthorized }
+        else { throw RestError.unauthorized() }
     }
     
     fileprivate struct TFABody: Codable {

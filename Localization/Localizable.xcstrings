@@ -19064,6 +19064,65 @@
         }
       }
     },
+    "Starting from %@/month. Enabled on all platforms. Cancel anytime." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ab %@/Monat. Auf allen Plattformen verfügbar. Jederzeit kündbar."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desde %@/mes. Disponible en todas las plataformas. Cancela cuando quieras."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À partir de %@/mois. Disponible sur toutes les plateformes. Annulable à tout moment."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A partire da %@/mese. Disponibile su tutte le piattaforme. Disdici quando vuoi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/月から。すべてのプラットフォームで利用可能。いつでもキャンセルできます。"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vanaf %@/maand. Beschikbaar op alle platforms. Altijd opzegbaar."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Od %@/miesiąc. Dostępne na wszystkich platformach. Anuluj w dowolnym momencie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A partir de %@/mês. Disponível em todas as plataformas. Cancele quando quiser."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "От %@/месяц. Доступно на всех платформах. Отмена в любое время."
+          }
+        }
+      }
+    },
     "Subscribe Now" : {
       "extractionState" : "stale",
       "localizations" : {
