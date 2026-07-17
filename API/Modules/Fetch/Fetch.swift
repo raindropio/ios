@@ -3,8 +3,17 @@ import Foundation
 private let session = URLSession(configuration: {
     let configuration = URLSessionConfiguration.default
     configuration.timeoutIntervalForRequest = 30
-    configuration.timeoutIntervalForResource = 300 // 5 min for large uploads
+    configuration.timeoutIntervalForResource = 300
     configuration.waitsForConnectivity = false
+    return configuration
+}())
+
+//large file uploads: tolerate slow uplinks and brief connectivity gaps
+private let uploadSession = URLSession(configuration: {
+    let configuration = URLSessionConfiguration.default
+    configuration.timeoutIntervalForRequest = 60
+    configuration.timeoutIntervalForResource = 3600
+    configuration.waitsForConnectivity = true
     return configuration
 }())
 
@@ -145,10 +154,17 @@ extension Fetch {
         query: [URLQueryItem]? = nil,
         formData: FormData
     ) async throws -> T {
-        let (data, _) = try await request(
-            try urlRequest(path, method: "PUT", query: query, formData: formData)
-        )
-        
+        var req = try urlRequest(path, method: "PUT", query: query)
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        req.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        //body goes to a temporary file so URLSession can rewind and resend it
+        let body = try formData.buildFile(boundary: boundary)
+        defer { FileStaging.discard(body) }
+
+        let (data, _) = try await upload(req, fromFile: body)
+
         return try decode(data: data)
     }
 }
@@ -205,17 +221,12 @@ extension Fetch {
 //MARK: - Universal request
 extension Fetch {
     func request(_ req: URLRequest) async throws -> (Data, URLResponse) {
-        guard let url = req.url
-        else { throw FetchError.invalidRequest(nil) }
-        
-        #if DEBUG
-        let start = Date()
-        #endif
+        try await perform(req) { url in
+            #if DEBUG
+            let start = Date()
+            #endif
 
-        //get and validate
-        var result: (Data, URLResponse)
-
-        do {
+            let result: (Data, URLResponse)
             if req.httpMethod == "GET" {
                 result = try await inFlightCache.deduplicated(for: url) {
                     try await session.data(for: req)
@@ -230,19 +241,46 @@ extension Fetch {
                 print("Slow request: \(req.httpMethod ?? "") \(req.url?.absoluteString ?? "") took \(String(format: "%.2f", elapsed))s")
             }
             #endif
+
+            return result
+        }
+    }
+
+    func upload(_ req: URLRequest, fromFile file: URL) async throws -> (Data, URLResponse) {
+        try await perform(req) { _ in
+            try await uploadSession.upload(for: req, fromFile: file)
+        }
+    }
+
+    //shared transport scaffolding: error mapping here gates retry eligibility
+    //(FetchError.requestNeverReachedServer), keep it in one place
+    private func perform(
+        _ req: URLRequest,
+        send: (URL) async throws -> (Data, URLResponse)
+    ) async throws -> (Data, URLResponse) {
+        guard let url = req.url
+        else { throw FetchError.invalidRequest(nil) }
+
+        var result: (Data, URLResponse)
+
+        do {
+            result = try await send(url)
         } catch {
             #if DEBUG
             print(req.httpMethod ?? "", req.url?.absoluteString ?? "", error.localizedDescription)
             #endif
             try Task.checkCancellation()
+            if let urlError = error as? URLError {
+                throw FetchError.network(url, code: urlError.code.rawValue, error.localizedDescription)
+            }
             throw FetchError.invalidResponse(url, error.localizedDescription)
         }
-        
+
         try await validate(data: result.0, res: result.1)
-        
+
         return (result.0, result.1)
     }
-    
+
     func urlRequest(
         _ path: String,
         method: String,
@@ -289,23 +327,6 @@ extension Fetch {
         return req
     }
     
-    func urlRequest(
-        _ path: String,
-        method: String,
-        query: [URLQueryItem]? = nil,
-        formData: FormData
-    ) throws -> URLRequest {
-        var req = try urlRequest(path, method: method, query: query)
-        
-        let boundary = "Boundary-\(UUID().uuidString)"
-        let (stream, length) = try formData.buildStream(boundary: boundary)
-
-        req.httpBodyStream = stream
-        req.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        req.setValue(String(length), forHTTPHeaderField: "Content-Length")
-        
-        return req
-    }
 }
 
 //MARK: - Validate

@@ -11,15 +11,26 @@ public extension View {
 fileprivate struct PI: ViewModifier {
     @Binding var isPresented: Bool
     var onCompletion: ([NSItemProvider]) -> Void
-    
+
+    @State private var picked = [NSItemProvider]()
+
     func body(content: Content) -> some View {
         content
-            .sheet(isPresented: $isPresented) {
+            .sheet(isPresented: $isPresented, onDismiss: deliver) {
                 PlatformPhotoPicker {
-                    onCompletion($0)
+                    picked = $0
                     isPresented = false
                 }
             }
+    }
+
+    //deliver only after the sheet is fully gone: the receiver presents its own
+    //sheet right away, and presenting while this one is still dismissing wedges
+    //presentation for the whole window (every later sheet silently fails)
+    private func deliver() {
+        guard !picked.isEmpty else { return }
+        onCompletion(picked)
+        picked = []
     }
 }
 
@@ -85,13 +96,9 @@ extension PlatformPhotoPicker {
         }
         
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+            //no picker.dismiss here: the sheet is SwiftUI-presented, dismissing
+            //its hosted controller through UIKit desyncs the sheet binding
             base.onCompletion(results.map { $0.itemProvider })
-                        
-            if !results.isEmpty {
-                #if canImport(UIKit)
-                picker.dismiss(animated: true);
-                #endif
-            }
         }
     }
 }

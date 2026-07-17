@@ -29,6 +29,16 @@ public struct URLField {
     }
 }
 
+extension URLField {
+    //typed input like "example.com" carries no scheme; give it https:// so the
+    //rest of the app receives a real web url instead of a path-only one
+    static func url(from string: String) -> URL? {
+        guard let url = URL(string: string) else { return nil }
+        guard url.scheme == nil else { return url }
+        return URL(string: "https://" + string) ?? url
+    }
+}
+
 extension URLField: View {
     public var body: some View {
         Group {
@@ -41,13 +51,13 @@ extension URLField: View {
             //sync from value only on an external change, not an echo of typing
             //(else normalization rewrites the text under the caret)
             .task(id: value) {
-                if URL(string: temp) != value {
+                if Self.url(from: temp) != value {
                     temp = value?.absoluteString ?? ""
                 }
             }
             //empty clears the value (optional binding); the non-optional init keeps the last valid URL
             .task(id: temp) {
-                value = temp.isEmpty ? nil : URL(string: temp)
+                value = temp.isEmpty ? nil : Self.url(from: temp)
             }
             #if canImport(UIKit)
             .keyboardType(.URL)

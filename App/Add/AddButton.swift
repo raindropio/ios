@@ -10,11 +10,21 @@ struct AddButton: View {
     @State private var pickURL = false
     @State private var pickPhotos = false
     @State private var pickFiles = false
-    
+    //delivered in the popover's onDismiss: the receiver presents its own sheet
+    //right away, and presenting while the popover is still dismissing wedges
+    //presentation for the whole window
+    @State private var pickedURL = [NSItemProvider]()
+
     var collection: Int = -1
-    
+
     private func add(_ items: [NSItemProvider]) {
         drop?(items, collection)
+    }
+
+    private func deliverURL() {
+        guard !pickedURL.isEmpty else { return }
+        add(pickedURL)
+        pickedURL = []
     }
     
     var body: some View {
@@ -56,7 +66,10 @@ struct AddButton: View {
                 .menuIndicator(.hidden)
                 .disabled(isSearching)
                 .popover(isPresented: $pickURL) {
-                    AddURL(action: add)
+                    //popover has no onDismiss; content's onDisappear fires the
+                    //same way — once the dismissal has fully completed
+                    AddURL { pickedURL = $0 }
+                        .onDisappear(perform: deliverURL)
                 }
                 .photoImporter(isPresented: $pickPhotos, onCompletion: add)
                 .fileImporter(isPresented: $pickFiles, allowedContentTypes: addTypes, allowsMultipleSelection: true, onCompletion: add)

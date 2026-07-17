@@ -48,25 +48,26 @@ extension Receive {
                 else if let decoded {
                     RaindropStack(decoded, content: RaindropForm.init)
                 } else {
-                    AddDetect(service.items) { loading, urls in
-                        //loading
-                        if loading {
+                    AddDetect(service.items) { found in
+                        //detecting
+                        if found == nil {
                             ProgressView()
                         }
-                        //nothing found
-                        else if urls.isEmpty {
+                        //no urls at all — the collection picker below would lead
+                        //to a dead-end "n of n failed" with nothing to retry
+                        else if let found, found.urls.isEmpty {
                             NothingFound()
                         }
                         //web url
-                        else if let first = urls.first, !first.isFileURL {
+                        else if let first = found?.urls.first, !first.isFileURL {
                             RaindropStack(
                                 .new(link: first, collection: collection),
                                 content: RaindropForm.init
                             )
                         }
                         //files
-                        else {
-                            SaveFiles(urls: urls)
+                        else if let found {
+                            SaveFiles(found: found)
                         }
                     }
                 }
@@ -82,17 +83,17 @@ extension Receive {
         @EnvironmentObject private var service: ExtensionService
 
         var body: some View {
-            AddDetect(service.items) { loading, urls in
-                if service.loading || loading {
+            AddDetect(service.items) { found in
+                if service.loading || found == nil {
                     ProgressView()
                 }
                 //nothing found
-                else if urls.isEmpty {
+                else if let found, found.isEmpty {
                     NothingFound()
                 }
                 //add
-                else {
-                    AddStack(urls)
+                else if let found {
+                    AddStack(found.urls, detectFailures: found.failures)
                 }
             }
                 .presentationDetents(UIDevice.current.userInterfaceIdiom == .phone ? [.fraction(0.333)] : [.large])

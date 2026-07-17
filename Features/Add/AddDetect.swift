@@ -1,16 +1,17 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import API
 
 public struct AddDetect<V: View> {
-    @State private var loading = true
-    @State private var urls = Set<URL>()
-    
+    ///nil while detection is in progress
+    @State private var found: DetectedItems?
+
     var items: [NSItemProvider]
-    var content: (Bool, Set<URL>) -> V
-    
+    var content: (DetectedItems?) -> V
+
     public init(
         _ items: [NSItemProvider],
-        @ViewBuilder content: @escaping (Bool, Set<URL>) -> V
+        @ViewBuilder content: @escaping (DetectedItems?) -> V
     ) {
         self.items = items
         self.content = content
@@ -19,26 +20,28 @@ public struct AddDetect<V: View> {
 
 extension AddDetect {
     func convert() async {
-        loading = true
-        
-        let urls = await items.urls()
+        found = nil
 
-        let web = urls.filter { !$0.isFileURL }
-        //web urls are priority
+        var found = await items.detectItems()
+
+        let web = found.urls.filter { !$0.isFileURL }
+        //web urls are priority; files that lose to them won't be uploaded —
+        //drop their staged copies right away instead of waiting for stale cleanup
         if !web.isEmpty {
-            self.urls = web
-        } else {
-            self.urls = urls
+            for url in found.urls where url.isFileURL {
+                FileStaging.discard(url)
+            }
+            found.urls = web
         }
-        
-        loading = false
+
+        self.found = found
     }
 }
 
 extension AddDetect: View {
     public var body: some View {
-        content(loading, urls)
-            .task(id: items, priority: .background) {
+        content(found)
+            .task(id: items, priority: .userInitiated) {
                 await convert()
             }
     }

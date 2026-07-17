@@ -4,13 +4,13 @@ import UI
 import Features
 
 struct SaveFiles: View {
-    var urls: Set<URL>
+    var found: DetectedItems
     @State var collection: Int?
-    
+
     var body: some View {
         Group {
             if let collection {
-                AddStack(urls, to: collection)
+                AddStack(found.urls, detectFailures: found.failures, to: collection)
                     .presentationDetents([.fraction(0.333)])
                     .presentationBackground(.regularMaterial)
             } else {

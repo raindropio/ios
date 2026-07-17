@@ -11,14 +11,19 @@ public extension View {
 fileprivate struct DropProviderModifier: ViewModifier {
     @EnvironmentObject private var dispatch: Dispatcher
 
-    @State private var urls = Set<URL>()
-    @State private var collection = -1
-    
+    @State private var pending: PendingDrop?
+
+    struct PendingDrop: Identifiable {
+        let id = UUID()
+        var items: [NSItemProvider]
+        var collection: Int
+    }
+
     func onDrop(_ items: [NSItemProvider], _ collection: Int) {
         let raindropsDrag = items.contains {
             $0.hasItemConformingToTypeIdentifier(UTType.raindrop.identifier)
         }
-        
+
         //only raindrops
         if raindropsDrag {
             Task {
@@ -32,25 +37,19 @@ fileprivate struct DropProviderModifier: ViewModifier {
             }
         }
         //other nsitems
-        else {
-            self.collection = collection
-            //make sure to get urls right away, otherwise OS kills nsitems in short time
-            Task {
-                self.urls = await items.urls()
-            }
+        else if !items.isEmpty {
+            //present immediately: the import starts inside the sheet and consumes
+            //providers right away, otherwise OS kills nsitems in short time
+            pending = .init(items: items, collection: collection)
         }
     }
-    
+
     func body(content: Content) -> some View {
         content
             .environment(\.drop, onDrop)
-            .sheet(
-                isPresented:
-                    .init { !urls.isEmpty }
-                    set: { if !$0 { urls = .init() } }
-            ) {
-                AddStack(urls, to: collection)
-                    .presentationDetents([.height(200)])
+            .sheet(item: $pending) { drop in
+                AddStack(drop.items, to: drop.collection)
+                    .presentationDetents([.height(240)])
                     .presentationBackground(.regularMaterial)
             }
     }
