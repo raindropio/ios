@@ -108,6 +108,15 @@ extension Collection where Element == Int {
 extension NSItemProvider {
     //detect single URL of file or web page (including from text)
     public func url() async throws -> URL? {
+        //share sheets often attach companion items under app-custom types
+        //(e.g. Apple News' internal article ref, Firefox's service item) that
+        //none of our representations can load — CoreTransferable would throw a
+        //scary TransferableSupportError next to a successfully saved link.
+        //Classify them as "nothing bookmarkable": surfaced only when the whole
+        //batch produced nothing
+        guard hasLoadableType
+        else { throw NoLinkFound() }
+
         //media and documents go straight to a file representation: it streams
         //to disk, never materializing the whole asset in memory. The data-probing
         //path below would load every photo's full bytes into RAM just to inspect them
@@ -122,6 +131,22 @@ extension NSItemProvider {
 
         //will work for almost any case
         return try await loadTransferable(type: DirectURL.self).rawValue
+    }
+
+    ///mirrors exactly what DirectURL/URLFromData can accept — a provider with
+    ///none of these types can only ever fail to load
+    private var hasLoadableType: Bool {
+        registeredTypeIdentifiers.contains {
+            guard let type = UTType($0) else { return false }
+
+            return type.conforms(to: .url)
+                || type.conforms(to: .text)
+                || type.conforms(to: .image)
+                || type.conforms(to: .movie)
+                || type.conforms(to: .video)
+                || type.conforms(to: .audio)
+                || type.conforms(to: .pdf)
+        }
     }
 
     ///a concrete file-backed media/document type (photo, video, audio, pdf).
