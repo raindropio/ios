@@ -7,6 +7,7 @@ import Backport
 extension Folder.Toolbar {
     struct Regular: ViewModifier {
         @EnvironmentObject private var dispatch: Dispatcher
+        @EnvironmentObject private var cfg: ConfigStore
         @Environment(\.containerHorizontalSizeClass) private var sizeClass
         @Environment(\.openDeepLink) private var openDeepLink
         @IsEditing private var isEditing
@@ -31,7 +32,7 @@ extension Folder.Toolbar {
         func body(content: Content) -> some View {
             content
                 .toolbar {
-                    if !isEditing {
+                    if !isEditing, cfg.state.ai.assistant {
                         ToolbarItem(placement: primaryActionsPlacement) {
                             Button("Ask", systemImage: "sparkle") {
                                 openDeepLink?(.ask)

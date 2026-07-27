@@ -8,6 +8,7 @@ extension Browser {
         @Environment(\.containerHorizontalSizeClass) private var horizontalSizeClass
         @Environment(\.verticalSizeClass) private var verticalSizeClass
         @EnvironmentObject private var dispatch: Dispatcher
+        @EnvironmentObject private var cfg: ConfigStore
         @Environment(\.dismiss) private var dismiss
         @Environment(\.openURL) private var openURL
         @Environment(\.openDeepLink) private var openDeepLink
@@ -80,18 +81,20 @@ extension Browser.Toolbar: ViewModifier {
                 .backport.sharedBackgroundVisibility(portrait ? .hidden : .visible)
             
             Group {
-                if #available(iOS 26.0, *) {
-                    ToolbarSpacer(.flexible, placement: placement)
-                }
-                
-                ToolbarItemGroup(placement: placement) {
-                    Button("Ask", systemImage: "sparkle") {
-                        openDeepLink?(.ask)
+                if cfg.state.ai.assistant {
+                    if #available(iOS 26.0, *) {
+                        ToolbarSpacer(.flexible, placement: placement)
                     }
-                        .tint(.pink)
-                    
-                    if #unavailable(iOS 26.0) {
-                        Spacer()
+
+                    ToolbarItemGroup(placement: placement) {
+                        Button("Ask", systemImage: "sparkle") {
+                            openDeepLink?(.ask)
+                        }
+                            .tint(.pink)
+
+                        if #unavailable(iOS 26.0) {
+                            Spacer()
+                        }
                     }
                 }
                 

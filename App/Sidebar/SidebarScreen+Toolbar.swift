@@ -7,6 +7,7 @@ extension SidebarScreen {
     struct Toolbar: ViewModifier {
         @Environment(\.containerHorizontalSizeClass) private var sizeClass
         @Environment(\.openDeepLink) private var openDeepLink
+        @EnvironmentObject private var cfg: ConfigStore
 
         private var addPlacement: ToolbarItemPlacement {
             if #available(iOS 26.0, *) {
@@ -22,7 +23,7 @@ extension SidebarScreen {
             .meNavigationTitle()
             .navigationBarTitleDisplayMode(isPhone ? .automatic : .inline)
             .toolbar {
-                if sizeClass == .compact {
+                if sizeClass == .compact, cfg.state.ai.assistant {
                     ToolbarItem(placement: addPlacement) {
                         Button("Ask", systemImage: "sparkle") {
                             openDeepLink?(.ask)

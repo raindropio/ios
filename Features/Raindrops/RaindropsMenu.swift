@@ -21,6 +21,7 @@ public func RaindropsMenu(_ ids: Set<Raindrop.ID>) -> some View {
 fileprivate struct _Menu: View {
     @EnvironmentObject private var sheet: RaindropSheet
     @EnvironmentObject private var r: RaindropsStore
+    @EnvironmentObject private var cfg: ConfigStore
     @EnvironmentObject private var dispatch: Dispatcher
     @IsEditing private var isEditing
 
@@ -44,8 +45,10 @@ fileprivate struct _Menu: View {
                         Label("Open", systemImage: "safari")
                     }
                     
-                    DeepLink(.raindrop(.ask(item.id))) {
-                        Label("Ask", systemImage: "sparkle")
+                    if cfg.state.ai.assistant {
+                        DeepLink(.raindrop(.ask(item.id))) {
+                            Label("Ask", systemImage: "sparkle")
+                        }
                     }
                     
                     if item.file == nil {
