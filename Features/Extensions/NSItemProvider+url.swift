@@ -116,7 +116,7 @@ extension NSItemProvider {
         //to disk, never materializing the whole asset in memory. The data-probing
         //path below would load every photo's full bytes into RAM just to inspect them
         if isFileMedia {
-            return try await loadTransferable(type: DirectURL.self).rawValue
+            return try await loadTransferable(type: DirectURL.self).unwrap()
         }
 
         //support edge cases
@@ -125,7 +125,7 @@ extension NSItemProvider {
         }
 
         //will work for almost any case
-        return try await loadTransferable(type: DirectURL.self).rawValue
+        return try await loadTransferable(type: DirectURL.self).unwrap()
     }
 
     ///mirrors exactly what DirectURL/URLFromData accept (String proxy = plain text only) — keep in sync
@@ -162,10 +162,15 @@ extension NSItemProvider {
     }
 }
 
+//importing closures must not throw for "no content": CoreTransferable replaces
+//any thrown error with a generic TransferableSupportError, losing the type.
+//rawValue == nil means "loaded, nothing bookmarkable" — url() maps it to NoLinkFound
 fileprivate struct DirectURL: Transferable {
-    private var string: String { rawValue.absoluteString }
+    let rawValue: URL?
 
-    let rawValue: URL
+    private init() {
+        self.rawValue = nil
+    }
 
     @Sendable init(_ url: URL) throws {
         if url.isFileURL {
@@ -181,12 +186,11 @@ fileprivate struct DirectURL: Transferable {
             self.rawValue = try FileStaging.stage(copying: url)
         }
         //a real web link always has a scheme and a host; pasteboards carry junk
-        //url side-items (e.g. a bare export filename next to a photo copied from
-        //the Photos app) that would otherwise turn into bogus bookmarks
+        //url side-items that would otherwise turn into bogus bookmarks
         else if url.scheme != nil, url.host != nil || url.scheme == "mailto" {
             self.rawValue = url
         } else {
-            throw NoLinkFound()
+            self.rawValue = nil
         }
     }
 
@@ -198,12 +202,26 @@ fileprivate struct DirectURL: Transferable {
         if let detected: URL = URL.detect(from: text) {
             try self.init(detected)
         } else {
-            throw NoLinkFound()
+            self.init()
         }
     }
 
+    ///plain-text arrives as raw bytes or as a keyed-archived NSString
+    @Sendable init(_ data: Data) throws {
+        if let text = (try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSString.self, from: data)) as? String {
+            try self.init(text)
+        } else {
+            try self.init(String(data: data, encoding: .utf8) ?? String(data: data, encoding: .utf16) ?? "")
+        }
+    }
+
+    func unwrap() throws -> URL {
+        guard let rawValue else { throw NoLinkFound() }
+        return rawValue
+    }
+
     static var transferRepresentation: some TransferRepresentation {
-        ProxyRepresentation(exporting: \.rawValue, importing: self.init)
+        ProxyRepresentation { (url: URL) in try Self(url) }
 
         FileRepresentation(importedContentType: .fileURL, importing: self.init)
         FileRepresentation(importedContentType: .video, importing: self.init)
@@ -212,7 +230,9 @@ fileprivate struct DirectURL: Transferable {
         FileRepresentation(importedContentType: .pdf, importing: self.init)
         FileRepresentation(importedContentType: .image, importing: self.init)
 
-        ProxyRepresentation(exporting: \.string, importing: self.init)
+        //String proxy matches utf8-plain-text only, DataRepresentation covers the rest of plain-text
+        ProxyRepresentation { (text: String) in try Self(text) }
+        DataRepresentation(importedContentType: .plainText, importing: self.init)
     }
 }
 
