@@ -108,12 +108,7 @@ extension Collection where Element == Int {
 extension NSItemProvider {
     //detect single URL of file or web page (including from text)
     public func url() async throws -> URL? {
-        //share sheets often attach companion items under app-custom types
-        //(e.g. Apple News' internal article ref, Firefox's service item) that
-        //none of our representations can load — CoreTransferable would throw a
-        //scary TransferableSupportError next to a successfully saved link.
-        //Classify them as "nothing bookmarkable": surfaced only when the whole
-        //batch produced nothing
+        //items no representation can load are noise, not failures
         guard hasLoadableType
         else { throw NoLinkFound() }
 
@@ -133,14 +128,13 @@ extension NSItemProvider {
         return try await loadTransferable(type: DirectURL.self).rawValue
     }
 
-    ///mirrors exactly what DirectURL/URLFromData can accept — a provider with
-    ///none of these types can only ever fail to load
+    ///mirrors exactly what DirectURL/URLFromData accept (String proxy = plain text only) — keep in sync
     private var hasLoadableType: Bool {
         registeredTypeIdentifiers.contains {
             guard let type = UTType($0) else { return false }
 
             return type.conforms(to: .url)
-                || type.conforms(to: .text)
+                || type.conforms(to: .plainText)
                 || type.conforms(to: .image)
                 || type.conforms(to: .movie)
                 || type.conforms(to: .video)
@@ -149,11 +143,8 @@ extension NSItemProvider {
         }
     }
 
-    ///a concrete file-backed media/document type (photo, video, audio, pdf).
-    ///Exactly the abstract base type (public.image / public.movie …) is how legacy
-    ///flows ship archived in-memory objects (e.g. a screenshot's UIImage) — those
-    ///must go through the data-probing path that unarchives them; real file
-    ///providers always register a concrete subtype (public.jpeg, public.heic …)
+    ///concrete file-backed media/document type; exact abstract bases (public.image …)
+    ///arrive as archived in-memory objects and need the data-probing path instead
     private var isFileMedia: Bool {
         registeredTypeIdentifiers.contains {
             guard
