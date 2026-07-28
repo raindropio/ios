@@ -16,9 +16,6 @@ public struct RaindropForm {
 
 extension RaindropForm {
     private func commit() async throws {
-        //tags field need a moment to update value when field is unfocused
-        try? await Task.sleep(for: .seconds(0.1))
-        
         if raindrop.isNew {
             lastUsedCollection = raindrop.collection
         }

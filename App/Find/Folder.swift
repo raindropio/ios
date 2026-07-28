@@ -2,7 +2,6 @@ import SwiftUI
 import Features
 import API
 import UI
-import Backport
 
 struct Folder: View {
     @EnvironmentObject private var r: RaindropsStore
@@ -38,7 +37,7 @@ struct Folder: View {
         }
             .pasteCommands(to: find.collectionId)
             .modifier(SearchBar(find: $find))
-            .backport.searchPresentationToolbarBehavior(.avoidHidingContent)
+            .searchPresentationToolbarBehavior(.avoidHidingContent)
             .modifier(Title(find: find))
             .modifier(Toolbar(find: $find, pick: $pick))
             .raindropSheets()

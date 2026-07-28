@@ -1,6 +1,5 @@
 import SwiftUI
 import API
-import Backport
 
 public func CollectionsList(_ selection: Binding<Int?>, system: [Int] = []) -> some View {
     _Optional(selection: selection, system: system)
@@ -14,7 +13,6 @@ public func CollectionsList(_ selection: Binding<Int>, system: [Int] = []) -> so
 fileprivate struct _Optional {
     @EnvironmentObject private var dispatch: Dispatcher
     @State private var search = ""
-    @FocusState private var searching: Bool
 
     @Binding var selection: Int?
     var system: [Int]
@@ -23,26 +21,6 @@ fileprivate struct _Optional {
 extension _Optional: View {
     var body: some View {
         List(selection: $selection) {
-            Section {
-                Label {
-                    TextField("Search", text: $search)
-                        .backport.focused($searching)
-                        #if canImport(UIKit)
-                        .textInputAutocapitalization(.never)
-                        .keyboardType(.webSearch)
-                        .submitLabel(.search)
-                        #endif
-                } icon: {
-                    Image(systemName: "magnifyingglass")
-                        .imageScale(.medium)
-                }
-                    .onTapGesture {
-                        searching = true
-                    }
-                    .listRowBackground(Color.primary.opacity(0.07))
-                    .listItemTint(.monochrome)
-            }
-            
             if search.isEmpty {
                 if system.contains(-1) {
                     SystemCollections<Int>(-1)
@@ -57,6 +35,8 @@ extension _Optional: View {
                 FindCollections<Int>(search)
             }
         }
+            .searchable(text: $search)
+            .searchPresentationToolbarBehavior(.avoidHidingContent)
             #if canImport(UIKit)
             .listStyle(.insetGrouped)
             .headerProminence(.increased)

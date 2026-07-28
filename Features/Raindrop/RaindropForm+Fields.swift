@@ -87,11 +87,20 @@ extension RaindropForm.Fields: View {
         
         //tags
         Section {
-            Label {
-                TagsField($raindrop.tags)
-                    .focused($focus, equals: .tags)
-            } icon: {
-                Image(systemName: "number")
+            NavigationLink {
+                RaindropTags($raindrop)
+            } label: {
+                Label {
+                    if raindrop.tags.isEmpty {
+                        Text("Tags")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text(raindrop.tags.joined(separator: ", "))
+                            .lineLimit(1)
+                    }
+                } icon: {
+                    Image(systemName: "number")
+                }
             }
         } footer: {
             RaindropSuggestedTags(raindrop: $raindrop, suggestions: suggestions)
@@ -151,7 +160,6 @@ extension RaindropForm.Fields {
         case excerpt
         case note
         case collection
-        case tags
         case link
     }
 }
