@@ -64,12 +64,15 @@ extension TagsList {
         !filter.isEmpty && exact == nil
     }
 
-    private func select(_ selection: Set<String>) {
-        let added = selection.subtracting(value)
-        value = value.filter { selection.contains($0) } + added.sorted()
-        if let tag = added.first, !new.isEmpty {
-            new = ""
-            scroll = tag
+    private func toggle(_ tag: String) {
+        if value.contains(tag) {
+            value = value.filter { $0 != tag }
+        } else {
+            value.append(tag)
+            if !new.isEmpty {
+                new = ""
+                scroll = tag
+            }
         }
     }
 
@@ -112,31 +115,36 @@ extension TagsList: View {
     public var body: some View {
         let known = known
         ScrollViewReader { proxy in
-            List(selection: .init(get: { Set(value) }, set: select)) {
+            List {
                 //create
                 if creatable {
                     Section {
                         Button(action: create) {
                             Label("Create \"\(trimmed)\"", systemImage: "plus")
                         }
-                            .selectionDisabled()
                     }
                 }
 
                 //tags
                 Section {
                     ForEach(all, id: \.self) { tag in
-                        if let filter = known[tag] {
-                            Text(tag)
-                                .badge(filter.count)
-                                .swipeActions { TagsMenu(filter) }
-                        } else {
-                            Text(tag)
+                        Button {
+                            toggle(tag)
+                        } label: {
+                            Label(tag, systemImage: value.contains(tag) ? "checkmark.circle.fill" : "circle")
+                                .contentTransition(.symbolEffect(.replace))
+                                .tint(.primary)
                         }
+                            .badge(known[tag]?.count ?? 0)
+                            .swipeActions {
+                                if let filter = known[tag] {
+                                    TagsMenu(filter)
+                                }
+                            }
+                            .listItemTint(value.contains(tag) ? nil : .monochrome)
                     }
                 }
             }
-                .environment(\.editMode, .constant(.active))
                 .searchable(text: $new, isPresented: $searching, prompt: "Add tag")
                 .searchPresentationToolbarBehavior(.avoidHidingContent)
                 .submitLabel(.return)
@@ -145,6 +153,7 @@ extension TagsList: View {
                 .onChange(of: scroll) {
                     autoscroll(proxy)
                 }
+                .safeAnimation(.default, value: value)
                 .safeAnimation(.default, value: all)
                 .safeAnimation(.default, value: creatable)
                 .tagSheets()
