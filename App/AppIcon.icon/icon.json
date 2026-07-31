@@ -1,9 +1,4 @@
 {
-  "color-space-for-untagged-svg-colors" : "display-p3",
-  "features" : [
-    "refractivity",
-    "specular-location"
-  ],
   "fill" : "automatic",
   "groups" : [
     {
@@ -48,7 +43,6 @@
               "value" : true
             }
           ],
-          "hidden" : false,
           "image-name" : "1 - Layer.svg",
           "name" : "1 - Layer",
           "opacity-specializations" : [
@@ -111,12 +105,15 @@
           "name" : "1 - Layer"
         }
       ],
-      "lighting" : "combined",
-      "refractivity" : {
-        "depth" : 0,
-        "enabled" : true,
-        "strength" : 0
-      },
+      "lighting-specializations" : [
+        {
+          "value" : "individual"
+        },
+        {
+          "appearance" : "tinted",
+          "value" : "individual"
+        }
+      ],
       "shadow-specializations" : [
         {
           "value" : {
@@ -134,12 +131,20 @@
         {
           "appearance" : "tinted",
           "value" : {
-            "kind" : "neutral",
+            "kind" : "layer-color",
             "opacity" : 1
           }
         }
       ],
-      "specular" : "inside",
+      "specular-specializations" : [
+        {
+          "value" : true
+        },
+        {
+          "appearance" : "tinted",
+          "value" : true
+        }
+      ],
       "translucency-specializations" : [
         {
           "value" : {
