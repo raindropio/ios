@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 # Install sentry
 export HOMEBREW_NO_AUTO_UPDATE=1

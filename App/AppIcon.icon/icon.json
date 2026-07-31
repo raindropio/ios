@@ -1,4 +1,9 @@
 {
+  "color-space-for-untagged-svg-colors" : "display-p3",
+  "features" : [
+    "refractivity",
+    "specular-location"
+  ],
   "fill" : "automatic",
   "groups" : [
     {
@@ -36,13 +41,14 @@
           },
           "glass-specializations" : [
             {
-              "value" : false
+              "value" : true
             },
             {
               "appearance" : "tinted",
               "value" : true
             }
           ],
+          "hidden" : false,
           "image-name" : "1 - Layer.svg",
           "name" : "1 - Layer",
           "opacity-specializations" : [
@@ -105,19 +111,16 @@
           "name" : "1 - Layer"
         }
       ],
-      "lighting-specializations" : [
-        {
-          "value" : "individual"
-        },
-        {
-          "appearance" : "tinted",
-          "value" : "individual"
-        }
-      ],
+      "lighting" : "combined",
+      "refractivity" : {
+        "depth" : 0,
+        "enabled" : true,
+        "strength" : 0
+      },
       "shadow-specializations" : [
         {
           "value" : {
-            "kind" : "layer-color",
+            "kind" : "none",
             "opacity" : 1
           }
         },
@@ -131,20 +134,12 @@
         {
           "appearance" : "tinted",
           "value" : {
-            "kind" : "layer-color",
+            "kind" : "neutral",
             "opacity" : 1
           }
         }
       ],
-      "specular-specializations" : [
-        {
-          "value" : true
-        },
-        {
-          "appearance" : "tinted",
-          "value" : true
-        }
-      ],
+      "specular" : "inside",
       "translucency-specializations" : [
         {
           "value" : {

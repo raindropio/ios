@@ -56,7 +56,7 @@ extension Browser.Toolbar: ViewModifier {
             //highlights
             ToolbarItem {
                 Button { highlights.toggle() } label: {
-                    Image(systemName: Filter.Kind.highlights.systemImage)
+                    Label(Filter.Kind.highlights.title, systemImage: Filter.Kind.highlights.systemImage)
                 }
                 .badge(raindrop.highlights.count)
                 .sheet(isPresented: $highlights) {
@@ -105,7 +105,7 @@ extension Browser.Toolbar: ViewModifier {
                 //move
                 ToolbarItemGroup(placement: placement) {
                     Button { collection.toggle() } label: {
-                        Image(systemName: "folder")
+                        Label("Collection", systemImage: "folder")
                     }
                         .sheet(isPresented: $collection) {
                             RaindropStack($raindrop, content: RaindropCollection.init)
@@ -124,11 +124,15 @@ extension Browser.Toolbar: ViewModifier {
                 //add tags
                 ToolbarItemGroup(placement: placement) {
                     Button { tags.toggle() } label: {
-                        Image(systemName: "number")
-                            .overlay(alignment: .topTrailing) {
-                                NumberInCircle(raindrop.tags.count)
-                                    .offset(x: 11, y: -11)
-                            }
+                        Label {
+                            Text("Tags")
+                        } icon: {
+                            Image(systemName: "number")
+                                .overlay(alignment: .topTrailing) {
+                                    NumberInCircle(raindrop.tags.count)
+                                        .offset(x: 11, y: -11)
+                                }
+                        }
                     }
                         .sheet(isPresented: $tags) {
                             RaindropStack($raindrop, content: RaindropTags.init)
@@ -147,7 +151,7 @@ extension Browser.Toolbar: ViewModifier {
                 //edit/add
                 ToolbarItemGroup(placement: placement) {
                     Button { form.toggle() } label: {
-                        Image(systemName: raindrop.isNew ? "plus.circle" : "info.circle")
+                        Label(raindrop.isNew ? "Add" : "Edit", systemImage: raindrop.isNew ? "plus.circle" : "info.circle")
                     }
                         .sheet(isPresented: $form) {
                             RaindropStack($raindrop, content: RaindropForm.init)
@@ -170,7 +174,7 @@ extension Browser.Toolbar: ViewModifier {
                         try await dispatch(RaindropsAction.delete(raindrop.id))
                         dismiss()
                     } label: {
-                        Image(systemName: "trash")
+                        Label("Delete", systemImage: "trash")
                     }
                         .disabled(raindrop.isNew)
                     
@@ -190,7 +194,7 @@ extension Browser.Toolbar: ViewModifier {
                             openURL(url)
                         }
                     } label: {
-                        Image(systemName: "safari")
+                        Label("Open", systemImage: "safari")
                     }
                         .disabled(page.url == nil)
                 }
