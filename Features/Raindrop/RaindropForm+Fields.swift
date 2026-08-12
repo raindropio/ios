@@ -1,6 +1,7 @@
 import SwiftUI
 import API
 import UI
+import Backport
 
 extension RaindropForm {
     struct Fields {
@@ -95,8 +96,14 @@ extension RaindropForm.Fields: View {
                         Text("Tags")
                             .foregroundStyle(.secondary)
                     } else {
-                        Text(raindrop.tags.joined(separator: ", "))
-                            .lineLimit(1)
+                        WStack(spacingX: 8, spacingY: 8) {
+                            ForEach(raindrop.tags, id: \.self) { tag in
+                                Button(tag) {}
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+                        .allowsHitTesting(false)
                     }
                 } icon: {
                     Image(systemName: "number")
