@@ -4,6 +4,7 @@ import UI
 import Features
 
 struct SplitView: View {
+    @EnvironmentObject private var store: Store
     @State private var path = SplitViewPath()
     @SceneStorage("column-visibility") private var columnVisibility = NavigationSplitViewVisibility.automatic
 
@@ -28,7 +29,8 @@ struct SplitView: View {
                         Folder(find: .init(get: { sidebar }, set: { path.sidebar = $0 }))
                     }
                 }
-                .navigationDestination(for: SplitViewPath.Screen.self, destination: screen)
+                //stores re-injected: cached destinations can re-evaluate detached from the hierarchy, losing ancestor environment objects
+                .navigationDestination(for: SplitViewPath.Screen.self) { screen($0).storeProvider(store) }
             }
         }
             .inspector(isPresented: $path.ask){

@@ -11,6 +11,7 @@ fileprivate struct SP: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            .environmentObject(store)
             .environmentObject(store.dispatcher)
             .environmentObject(store.auth)
             .environmentObject(store.collaborators)

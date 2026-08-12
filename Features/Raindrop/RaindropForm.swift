@@ -3,24 +3,10 @@ import API
 import UI
 
 public struct RaindropForm {
-    @EnvironmentObject private var dispatch: Dispatcher
-    @Environment(\.dismiss) private var dismiss
-    @AppStorage("last-used-collection") private var lastUsedCollection: Int?
-    
     @Binding var raindrop: Raindrop
-    
+
     public init(_ raindrop: Binding<Raindrop>) {
         self._raindrop = raindrop
-    }
-}
-
-extension RaindropForm {
-    private func commit() async throws {
-        if raindrop.isNew {
-            lastUsedCollection = raindrop.collection
-        }
-        try await dispatch(raindrop.isNew ? RaindropsAction.create(raindrop) : RaindropsAction.update(raindrop))
-        dismiss()
     }
 }
 
@@ -47,7 +33,7 @@ extension RaindropForm: View {
                     ToolbarItem(placement: .confirmationAction) {
                         SubmitButton {
                             Text("Save")
-                                .padding(.horizontal, 3)
+                                .padding(.horizontal, 5)
                         }
                             #if canImport(UIKit)
                             .buttonBorderShape(.capsule)
@@ -55,6 +41,5 @@ extension RaindropForm: View {
                     }
                 }
             }
-            .onSubmit(commit)
     }
 }

@@ -31,6 +31,8 @@
 	<string>685439359098-o4gtsi4d97buj0v0124p3uledd21n3n5.apps.googleusercontent.com</string>
 	<key>NSCameraUsageDescription</key>
 	<string>We need access to your camera to take your avatar and photos.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Websites you open in the app may request access to your microphone.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoadsInWebContent</key>

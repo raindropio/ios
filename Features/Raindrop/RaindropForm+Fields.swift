@@ -90,6 +90,17 @@ extension RaindropForm.Fields: View {
         Section {
             NavigationLink {
                 RaindropTags($raindrop)
+                    .toolbar {
+                        if raindrop.isNew {
+                            ToolbarItem(placement: .confirmationAction) {
+                                SubmitButton {
+                                    Text("Save")
+                                        .padding(.horizontal, 5)
+                                }
+                                    .buttonBorderShape(.capsule)
+                            }
+                        }
+                    }
             } label: {
                 Label {
                     if raindrop.tags.isEmpty {

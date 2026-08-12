@@ -108,11 +108,21 @@ fileprivate struct ByURL<C: View>: View {
 fileprivate struct Stack<C: View>: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var dispatch: Dispatcher
+    @AppStorage("last-used-collection") private var lastUsedCollection: Int?
 
     @Binding var draft: Raindrop
     var loading = false
     var content: (Binding<Raindrop>) -> C
     
+    //save on submit, triggerable from any screen of the stack
+    private func commit() async throws {
+        if draft.isNew {
+            lastUsedCollection = draft.collection
+        }
+        try await dispatch(draft.isNew ? RaindropsAction.create(draft) : RaindropsAction.update(draft))
+        dismiss()
+    }
+
     //auto-save for existing bookmarks
     private func saveOnClose() {
         guard !draft.isNew else { return }
@@ -132,6 +142,8 @@ fileprivate struct Stack<C: View>: View {
                     }
                 }
         }
+            //on the stack itself, so pushed screens inherit the submit environment
+            .onSubmit(commit)
             .task(id: draft.isNew, priority: .background) {
                 try? await dispatch(RaindropsAction.enrich($draft))
             }
