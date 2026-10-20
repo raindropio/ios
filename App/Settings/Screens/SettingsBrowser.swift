@@ -20,16 +20,18 @@ struct SettingsBrowser: View {
             }
                 .pickerStyle(.inline)
             
-            Section {
-                Toggle(
-                    "Universal links",
-                    isOn: .init(
-                        get: {universalLinks == .enabled},
-                        set: {universalLinks = $0 ? .enabled : .disabled}
+            if browser != .system {
+                Section {
+                    Toggle(
+                        "Universal links",
+                        isOn: .init(
+                            get: {universalLinks == .enabled},
+                            set: {universalLinks = $0 ? .enabled : .disabled}
+                        )
                     )
-                )
-            } footer: {
-                Text("Enabling Universal Links will open some URLs in specific apps installed on your device. For example, an Instagram URL will open up in the Instagram app and take you directly to the specific post.")
+                } footer: {
+                    Text("Enabling Universal Links will open some URLs in specific apps installed on your device. For example, an Instagram URL will open up in the Instagram app and take you directly to the specific post.")
+                }
             }
         }
             .navigationTitle("Browser")

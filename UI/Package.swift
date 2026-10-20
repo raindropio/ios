@@ -18,7 +18,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/onevcat/Kingfisher",
-            from: "8.11.0"
+            from: "8.14.0"
         ),
         .package(path: "Backport"),
     ],

@@ -27,7 +27,7 @@ public struct UserCollection: CollectionType {
     
     public var publicPage: URL {
         .init(string: self.public ?
-              "https://raindrop.io/\(creatorRef?.name ?? "")/\(slug)-\(id)" :
+              "https://\(creatorRef?.name ?? "").raindrop.page/\(slug)-\(id)" :
                 "https://app.raindrop.io/my/\(id)"
         )!
     }
