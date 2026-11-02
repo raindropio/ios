@@ -66,7 +66,6 @@ extension WebPage: WKNavigationDelegate {
     private func onError(_ webView: WKWebView, error: Error) {
         guard (error as NSError).code != NSURLErrorCancelled else { return }
         self.error = error
-        self.prefersHiddenToolbars = false
         #if canImport(UIKit)
         webView.scrollView.refreshControl?.endRefreshing()
         #endif

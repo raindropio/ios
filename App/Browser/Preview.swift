@@ -2,6 +2,7 @@ import SwiftUI
 import API
 import UI
 import Features
+import Backport
 
 struct Preview: View {
     @Environment(\.containerHorizontalSizeClass) private var horizontalSizeClass
@@ -52,7 +53,6 @@ struct Preview: View {
                         }
                         .popover(isPresented: $appearance, content: ReaderAppearance.init)
                     }
-                        .backport.sharedBackgroundVisibility(verticalSizeClass == .regular && horizontalSizeClass == .compact ? .hidden : .visible)
                 }
             }
     }

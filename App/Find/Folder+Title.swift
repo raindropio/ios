@@ -39,6 +39,8 @@ extension Folder.Title {
         func body(content: Content) -> some View {
             content
                 .navigationTitle(scope)
+                //inline as fix for toolbarMinimizationBehavior in Browser (otherwise hidden toolbar and swipe back freeze)
+                .navigationBarTitleDisplayMode(.inline)
         }
     }
 }

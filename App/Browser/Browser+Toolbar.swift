@@ -2,6 +2,7 @@ import SwiftUI
 import API
 import UI
 import Features
+import Backport
 
 extension Browser {
     struct Toolbar {
@@ -13,6 +14,7 @@ extension Browser {
         @Environment(\.openURL) private var openURL
         @Environment(\.openDeepLink) private var openDeepLink
         @Environment(\.colorScheme) private var colorScheme
+        @Environment(\.backportToolbarVerticalEdge) private var verticalEdge
 
         @State private var collection = false
         @State private var tags = false
@@ -44,12 +46,21 @@ extension Browser.Toolbar: ViewModifier {
         //overall
         .toolbarRole(.editor)
         #if canImport(UIKit)
-        .toolbar(page.prefersHiddenToolbars ? .hidden : .automatic, for: .bottomBar)
-        .toolbarBackground(raindrop.type.readable ? .clear : page.toolbarBackground ?? .clear, for: .navigationBar, .bottomBar)
+        .backport.toolbarMinimizationBehavior(.onScrollDown, for: .navigationBar)
+        .hidesBottomBarOnScroll(enabled: horizontalSizeClass != .regular && verticalEdge == nil)
+        .toolbarBackground(.clear, for: .navigationBar)
+        .toolbarBackground(raindrop.type.readable ? .clear : page.toolbarBackground ?? .clear, for: .bottomBar)
         .toolbarColorScheme(page.toolbarColorScheme == colorScheme ? nil : page.toolbarColorScheme, for: .navigationBar, .bottomBar)
         .backport.toolbarBackgroundVisibility(raindrop.type.readable ? .automatic : .visible, for: .navigationBar)
         .backport.toolbarBackgroundVisibility(raindrop.type.readable ? .automatic : .visible, for: .bottomBar)
-        .animation(.default, value: page.prefersHiddenToolbars)
+        .overlay(alignment: .top) {
+            if !raindrop.type.readable, let color = page.toolbarBackground {
+                Color.clear
+                    .frame(height: 0)
+                    .background(color.ignoresSafeArea(edges: [.top, .horizontal]))
+                    .allowsHitTesting(false)
+            }
+        }
         #endif
         //buttons
         .toolbar {
@@ -67,7 +78,7 @@ extension Browser.Toolbar: ViewModifier {
                         #endif
                 }
             }
-            .backport.sharedBackgroundVisibility(portrait ? .hidden : .visible)
+            .backport.visibilityPriority(.low)
             
             //share
             ToolbarItem {
@@ -78,7 +89,7 @@ extension Browser.Toolbar: ViewModifier {
                         .equatable()
                 }
             }
-                .backport.sharedBackgroundVisibility(portrait ? .hidden : .visible)
+            .backport.visibilityPriority(.low)
             
             Group {
                 if cfg.state.ai.assistant {
@@ -167,6 +178,7 @@ extension Browser.Toolbar: ViewModifier {
                         Spacer()
                     }
                 }
+                .backport.visibilityPriority(.high)
                 
                 //delete
                 ToolbarItemGroup(placement: placement) {
@@ -198,6 +210,7 @@ extension Browser.Toolbar: ViewModifier {
                     }
                         .disabled(page.url == nil)
                 }
+                .backport.visibilityPriority(.high)
             }
         }
         

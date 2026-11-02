@@ -11,10 +11,8 @@ extension SettingsIOS {
         @Environment(\.dismiss) private var dismiss
         @AppStorage(PreferredBrowser.key) private var browser: PreferredBrowser = .default
 
-        @Binding var selection: SettingsPath.Screen?
-        
         var body: some View {
-            List(selection: $selection) {
+            List {
                 Group {
                     Section {
                         NavigationLink(value: SettingsPath.Screen.account) {
@@ -87,7 +85,6 @@ extension SettingsIOS {
                 }
             }
             .listStyle(.insetGrouped)
-            .safeAreaInset(edge: .top) { Color.clear.frame(height: 4) }
             .navigationTitle("Settings")
             .labelStyle(.sidebar)
             .toolbar {

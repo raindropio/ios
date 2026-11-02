@@ -20,6 +20,7 @@ extension Folder {
 
         func body(content: Content) -> some View {
             content
+                .backport.scrollEdgeEffectStyle(.soft, for: .all)
                 .modifier(
                     Regular(find: $find, pick: pick, total: r.state.total(find))
                 )

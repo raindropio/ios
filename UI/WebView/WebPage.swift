@@ -12,18 +12,12 @@ public class WebPage: NSObject, ObservableObject {
             
             oldValue?.navigationDelegate = nil
             oldValue?.uiDelegate = nil
-            #if canImport(UIKit)
-            oldValue?.scrollView.delegate = nil
-            #endif
             
             history = .init()
             cancellable = nil
             if let view {
                 view.navigationDelegate = self
                 view.uiDelegate = self
-                #if canImport(UIKit)
-                view.scrollView.delegate = self
-                #endif
                 view.isOpaque = false
                 
                 cancellable = Publishers.MergeMany(
@@ -72,7 +66,6 @@ public class WebPage: NSObject, ObservableObject {
     }
     
     @Published public var error: Error?
-    @Published public var prefersHiddenToolbars = false
     
     //dialogs
     @Published var alert: Alert?

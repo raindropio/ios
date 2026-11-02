@@ -54,8 +54,6 @@ struct AuthLogIn: View {
             SubmitButton("Continue")
             
             AuthContinueWith()
-                .opacity(form.isEmpty ? 1 : 0)
-                .safeAnimation(.default, value: form.isEmpty)
         }
             .backport.defaultFocus($focus, .email)
             .scrollBounceBehavior(.basedOnSize)

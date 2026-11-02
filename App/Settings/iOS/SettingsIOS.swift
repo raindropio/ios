@@ -3,36 +3,34 @@ import SwiftUI
 import UI
 
 struct SettingsIOS: View {
-    @State var path: SettingsPath
+    @State private var stack: [SettingsPath.Screen]
+
+    init(path: SettingsPath) {
+        _stack = .init(initialValue: path.screen.map { [$0] } ?? [])
+    }
 
     var body: some View {
-        NavigationSplitView {
-            Sidebar(selection: $path.screen)
-        } detail: {
-            Group {
-                switch path.screen {
-                case .account:
-                    SettingsAccount()
-                case .backups:
-                    SettingsWebApp(subpage: .backups)
-                case .import:
-                    SettingsWebApp(subpage: .import)
-                case .subscription:
-                    SettingsSubscription()
-                case .appIcon:
-                    SettingsAppIcon()
-                case .extensions:
-                    SettingsExtensions()
-                case .browser:
-                    SettingsBrowser()
-                case nil:
-                    Color.clear
+        NavigationStack(path: $stack) {
+            Sidebar()
+                .navigationDestination(for: SettingsPath.Screen.self) { screen in
+                    switch screen {
+                    case .account:
+                        SettingsAccount()
+                    case .backups:
+                        SettingsWebApp(subpage: .backups)
+                    case .import:
+                        SettingsWebApp(subpage: .import)
+                    case .subscription:
+                        SettingsSubscription()
+                    case .appIcon:
+                        SettingsAppIcon()
+                    case .extensions:
+                        SettingsExtensions()
+                    case .browser:
+                        SettingsBrowser()
+                    }
                 }
-            }
-            .navigationBarTitleDisplayMode(.large)
         }
-            .environment(\.horizontalSizeClass, .compact)
-            .navigationBarTitleDisplayMode(.large)
     }
 }
 #endif

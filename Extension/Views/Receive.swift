@@ -72,7 +72,6 @@ extension Receive {
                     }
                 }
             }
-                .presentationDetents(UIDevice.current.userInterfaceIdiom == .phone ? [.fraction(0.75), .large] : [.large])
                 .presentationBackground(.regularMaterial)
         }
     }
@@ -96,7 +95,6 @@ extension Receive {
                     AddStack(found.urls, detectFailures: found.failures)
                 }
             }
-                .presentationDetents(UIDevice.current.userInterfaceIdiom == .phone ? [.fraction(0.333)] : [.large])
                 .presentationBackground(.regularMaterial)
                 .presentationCompactAdaptation(.sheet)
                 .transition(.opacity)

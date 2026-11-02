@@ -45,6 +45,8 @@ struct AuthScreen: View {
                 .ignoresSafeArea(edges: .top)
                 .navigationTitle("")
                 .toolbarBackground(.clear, for: .automatic)
+                .backport.toolbarBackgroundVisibility(.hidden, for: .automatic)
+                .backport.scrollEdgeEffectStyle(.soft, for: .all)
                 .toolbar {
                     ToolbarItem(placement: .principal) {
                         Image("logo-text")

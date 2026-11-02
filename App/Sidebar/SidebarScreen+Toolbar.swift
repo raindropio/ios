@@ -21,6 +21,7 @@ extension SidebarScreen {
             content
             #if canImport(UIKit)
             .meNavigationTitle()
+            .backport.scrollEdgeEffectStyle(.soft, for: .all)
             .navigationBarTitleDisplayMode(isPhone ? .automatic : .inline)
             .toolbar {
                 if sizeClass == .compact, cfg.state.ai.assistant {

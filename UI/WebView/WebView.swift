@@ -29,14 +29,7 @@ extension WebView: View {
             //dialogs
             .modifier(Dialogs(page: page))
             //allow back webview navigation
-            .popGesture({
-                if page.canGoBack {
-                    return .never
-                } else if page.prefersHiddenToolbars {
-                    return .always
-                }
-                return .automatic
-            }())
+            .popGesture(page.canGoBack ? .never : .automatic)
     }
 }
 

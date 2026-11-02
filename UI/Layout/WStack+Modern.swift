@@ -1,7 +1,6 @@
 import SwiftUI
 
 extension WStack {
-    @available(iOS 16.0, *)
     struct Modern: Layout {
         var alignment: Alignment
         var spacingX: Double

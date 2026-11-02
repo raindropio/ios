@@ -141,6 +141,7 @@ fileprivate struct Stack<C: View>: View {
                         DoneToolbarItem()
                     }
                 }
+                .backport.scrollEdgeEffectStyle(.soft, for: .all)
         }
             //on the stack itself, so pushed screens inherit the submit environment
             .onSubmit(commit)
